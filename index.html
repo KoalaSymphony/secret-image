@@ -26,6 +26,7 @@
     <!-- Initially hidden; revealed when correct password entered -->
     <div id="result" class="hidden">
       <img id="secretImg" class="secret" src="secret.jpg" alt="Secret image" />
+      <audio id="unlockSound" src="secret.mp3"></audio>
     </div>
   </div>
 
@@ -69,6 +70,12 @@
           result.classList.remove('hidden');
           msg.style.color = 'green';
           msg.textContent = 'Unlocked!';
+          // Play audio
+          const audio = document.getElementById('unlockSound');
+          audio.currentTime = 0; // rewind in case of repeat
+          audio.play().catch(err => {
+            console.warn("Autoplay blocked:", err);
+          });
         } else {
           msg.style.color = '';
           msg.textContent = 'Incorrect password';
