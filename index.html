@@ -60,9 +60,6 @@
     const result = document.getElementById('result');
 
     checkBtn.addEventListener('click', async () => {
-      msg.textContent = '';
-      checkBtn.disabled = true;
-      const v = pwInput.value || '';
       
       // Play audio
       const audio = document.getElementById('unlockSound');
@@ -70,6 +67,10 @@
       audio.play().catch(err => {
         console.warn("Autoplay blocked:", err);
       });
+      
+      msg.textContent = '';
+      checkBtn.disabled = true;
+      const v = pwInput.value || '';    
       
       try {
         const h = await sha256Hex(v);
