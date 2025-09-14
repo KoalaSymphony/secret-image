@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Secret Image</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; display:flex; min-height:100vh; align-items:center; justify-content:center; background:#f4f4f6; margin:0; }
+    .card { background:white; padding:28px; border-radius:12px; box-shadow:0 6px 20px rgba(16,24,40,0.08); max-width:420px; width:100%; text-align:center; }
+    input.password { width:100%; padding:10px 12px; margin:10px 0; border-radius:8px; border:1px solid #d1d5db; font-size:16px; }
+    button { padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:600; }
+    .hidden { display:none; }
+    img.secret { max-width:100%; border-radius:8px; margin-top:12px; }
+    .msg { color:#ef4444; margin-top:8px; min-height:18px; }
+  </style>
+</head>
+<body>
+  <div class="card" role="main">
+    <h2>Enter password to reveal image</h2>
+    <input id="pw" class="password" type="password" placeholder="password" autocomplete="off" />
+    <div>
+      <button id="check">Unlock</button>
+    </div>
+    <div class="msg" id="msg"></div>
+
+    <!-- Initially hidden; revealed when correct password entered -->
+    <div id="result" class="hidden">
+      <img id="secretImg" class="secret" src="secret.jpg" alt="Secret image" />
+    </div>
+  </div>
+
+  <script>
+    // === CONFIG ===
+    // Put here the SHA-256 hex hash of the correct password.
+    // This prevents the plain password from being visible in the file.
+    // (Note: hash in client-side still can be used to brute-force offline.)
+    const correctHashHex = "1f8ac10f23c5b5bc1167bda84b833e5c057a77d2"; // example (sha1) - replace with your hash
+    // === END CONFIG ===
+
+    // Helper: convert bytes -> hex
+    function bytesToHex(bytes) {
+      return Array.from(new Uint8Array(bytes))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+
+    // Compute SHA-256 hash of the password string, return hex
+    async function sha256Hex(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return bytesToHex(hashBuffer);
+    }
+
+    // UI
+    const pwInput = document.getElementById('pw');
+    const checkBtn = document.getElementById('check');
+    const msg = document.getElementById('msg');
+    const result = document.getElementById('result');
+
+    checkBtn.addEventListener('click', async () => {
+      msg.textContent = '';
+      checkBtn.disabled = true;
+      const v = pwInput.value || '';
+      try {
+        const h = await sha256Hex(v);
+        if (h === correctHashHex) {
+          // show image
+          result.classList.remove('hidden');
+          msg.style.color = 'green';
+          msg.textContent = 'Unlocked!';
+        } else {
+          msg.style.color = '';
+          msg.textContent = 'Incorrect password';
+        }
+      } catch (e) {
+        msg.textContent = 'Error';
+        console.error(e);
+      }
+      checkBtn.disabled = false;
+      pwInput.value = '';
+    });
+
+    // optional: submit on Enter
+    pwInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') checkBtn.click();
+    });
+  </script>
+</body>
+</html>
